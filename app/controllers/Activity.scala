@@ -48,8 +48,9 @@ class Activity @Inject() (val reactiveMongoApi: ReactiveMongoApi)
 
   def findById(id: String) = Action.async { request =>
     implicit val activityFormat = JsonFormats.activityFormat
-    collection.find(Json.obj("id" -> id)).one[models.Activity]. map { activity =>
-      Ok(Json.toJson(activity.get))
+    collection.find(Json.obj("_id" -> BSONObjectID(id))).one[models.Activity] map {
+      case Some(activity) => Ok(Json.toJson(activity))
+      case None => NotFound
     }
   }
 

@@ -1,7 +1,5 @@
 package models
 
-import play.api.libs.json.Json
-
 case class Venue (line1: String, line2: Option[String], city: String, postcode: String, lat: Double, lng: Double)
 
 case class Contact (landline: String, mobile: String, website: Option[String], facebook: Option[String], twitter: Option[String])

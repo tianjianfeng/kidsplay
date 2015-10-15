@@ -4,7 +4,7 @@ import javax.inject.Inject
 
 import models.{JsonFormats}
 import play.api._
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{Reads, JsValue, Json}
 import play.api.mvc._
 import play.modules.reactivemongo.{ReactiveMongoComponents, MongoController, ReactiveMongoApi}
 import reactivemongo.bson.BSONObjectID
@@ -28,7 +28,7 @@ class Activity @Inject() (val reactiveMongoApi: ReactiveMongoApi)
     Ok(views.html.index("Your new application is ready."))
   }
 
-  def create = Action.async(parse.json) { request =>
+  def create = Action.async(parse.json) { implicit request =>
     /*
      * request.body is a JsValue.
      * There is an implicit Writes that turns this JsValue as a JsObject,
@@ -55,8 +55,16 @@ class Activity @Inject() (val reactiveMongoApi: ReactiveMongoApi)
     }
   }
 
+//  def findByCategory(category: String) = Action.async { request =>
+////    implicit val activityFormat = JsonFormats.activityFormat
+//    implicit val activityReader = Json.reads[Activity]
+//    collection.find(Json.obj("category" -> category)).cursor().collect[List]().map { activities =>
+//      Ok(activities)
+//    }
+//  }
+
 }
 
 trait Utils {
-  def withJson[T](implicit request: Request[JsValue]) = request.body.validate[T]
+  def withJson[T](implicit request: Request[JsValue], reads:Reads[T]) = request.body.validate[T]
 }

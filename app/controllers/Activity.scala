@@ -4,7 +4,7 @@ import javax.inject.Inject
 
 import models.{JsonFormats}
 import play.api._
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
 import play.modules.reactivemongo.{ReactiveMongoComponents, MongoController, ReactiveMongoApi}
 import reactivemongo.bson.BSONObjectID
@@ -20,7 +20,7 @@ import play.modules.reactivemongo.json.collection._
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class Activity @Inject() (val reactiveMongoApi: ReactiveMongoApi)
-  extends Controller with MongoController with ReactiveMongoComponents {
+  extends Controller with MongoController with ReactiveMongoComponents with Utils {
 
   def collection: JSONCollection = db.collection[JSONCollection]("activities")
 
@@ -38,7 +38,8 @@ class Activity @Inject() (val reactiveMongoApi: ReactiveMongoApi)
      */
 
     implicit val activityFormat = JsonFormats.activityFormat
-    request.body.validate[models.Activity].map { activity =>
+
+    withJson[models.Activity].map { activity =>
       collection.insert(activity).map { lastError =>
         Logger.debug(s"Successfully inserted with LastError: $lastError")
         Created
@@ -48,11 +49,14 @@ class Activity @Inject() (val reactiveMongoApi: ReactiveMongoApi)
 
   def findById(id: BSONObjectID) = Action.async { request =>
     implicit val activityFormat = JsonFormats.activityFormat
-//    implicit val bsonIdFormat = models.BSONObjectIdFormats.objectIdFormats
     collection.find(Json.obj("_id" -> id)).one[models.Activity] map {
       case Some(activity) => Ok(Json.toJson(activity))
       case None => NotFound
     }
   }
 
+}
+
+trait Utils {
+  def withJson[T](implicit request: Request[JsValue]) = request.body.validate[T]
 }

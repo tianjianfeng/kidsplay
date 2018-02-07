@@ -1,2 +1,4 @@
 This application allows users to find children's activities nearby. 
 
+Using Scala, Play Framework, Reactive Mongo, ScalaTest
+
